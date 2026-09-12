@@ -1,0 +1,8 @@
+SummarizedExperiment
+PRONE
+tidyverse
+ggplot2
+RColorBrewer
+scales
+svglite
+patchwork

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Documentation</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #2196f3;
+            padding-bottom: 10px;
+            color: #1976d2;
+        }
+        h2 {
+            margin-top: 30px;
+            color: #1976d2;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+        h3 {
+            margin-top: 20px;
+            color: #424242;
+        }
+        h4 {
+            color: #616161;
+        }
+        a {
+            color: #2196f3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        blockquote {
+            border-left: 4px solid #2196f3;
+            margin: 0;
+            padding-left: 15px;
+            color: #666;
+            background: #f5f9fc;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #2196f3;
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        strong {
+            font-weight: 600;
+            color: #1976d2;
+        }
+        .mermaid {
+            text-align: center;
+            margin: 20px 0;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+<h1 id="total-proteomics-qc--normalisation">Total Proteomics QC &amp; Normalisation</h1>
+<h2 id="installation">Installation</h2>
+<p><a href="cauldron://install?repo=https%3A%2F%2Fgithub.com%2Fnoatgnu%2Ftotal-proteomics-qc-normalisation-plugin">⬇️ <strong>Click here to install in Cauldron</strong></a></p>
+<blockquote>
+<p><strong>Repository</strong>: <code>https://github.com/noatgnu/total-proteomics-qc-normalisation-plugin</code></p>
+</blockquote>
+<p><strong>Manual installation:</strong></p>
+<ol>
+<li>Open Cauldron</li>
+<li>Go to <strong>Plugins</strong> → <strong>Install from Repository</strong></li>
+<li>Paste: <code>https://github.com/noatgnu/total-proteomics-qc-normalisation-plugin</code></li>
+<li>Click <strong>Install</strong></li>
+</ol>
+<p><strong>ID</strong>: <code>total-proteomics-qc-normalisation</code><br>
+<strong>Version</strong>: 1.0.0<br>
+<strong>Category</strong>: preprocessing<br>
+<strong>Author</strong>: CauldronGO Team</p>
+<h2 id="description">Description</h2>
+<p>QC filtering and PRONE normalisation method comparison for DIA-NN total proteomics data</p>
+<h2 id="runtime">Runtime</h2>
+<ul>
+<li>
+<p><strong>Environments</strong>: <code>r</code></p>
+</li>
+<li>
+<p><strong>Entrypoint</strong>: <code>total_proteomics_qc_normalisation.R</code></p>
+</li>
+</ul>
+<h2 id="inputs">Inputs</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Label</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Visibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pg_matrix_file</code></td>
+<td>Protein Group Matrix File</td>
+<td>file</td>
+<td>Yes</td>
+<td>-</td>
+<td>Always visible</td>
+</tr>
+<tr>
+<td><code>stats_file</code></td>
+<td>Stats File</td>
+<td>file</td>
+<td>No</td>
+<td>-</td>
+<td>Always visible</td>
+</tr>
+<tr>
+<td><code>annotation_file</code></td>
+<td>Sample Annotation File</td>
+<td>file</td>
+<td>Yes</td>
+<td>-</td>
+<td>Always visible</td>
+</tr>
+<tr>
+<td><code>min_unique_peptides</code></td>
+<td>Minimum Proteotypic Peptides</td>
+<td>number (min: 0, step: 1)</td>
+<td>No</td>
+<td>2</td>
+<td>Always visible</td>
+</tr>
+<tr>
+<td><code>contaminant_column</code></td>
+<td>Contaminant Column</td>
+<td>text</td>
+<td>No</td>
+<td>Contaminant</td>
+<td>Always visible</td>
+</tr>
+<tr>
+<td><code>cc_mapped_column</code></td>
+<td>Curated Category Column</td>
+<td>text</td>
+<td>No</td>
+<td>-</td>
+<td>Always visible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="input-details">Input Details</h3>
+<h4 id="protein-group-matrix-file-pg-matrix-file">Protein Group Matrix File (<code>pg_matrix_file</code>)</h4>
+<p>DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file)</p>
+<h4 id="stats-file-stats-file">Stats File (<code>stats_file</code>)</h4>
+<p>DIA-NN report.stats.tsv (per-run QC metrics). Optional; omit to skip run-level QC plots.</p>
+<h4 id="sample-annotation-file-annotation-file">Sample Annotation File (<code>annotation_file</code>)</h4>
+<p>Cauldron sample annotation file. Sample is matched against pg_matrix column names by exact string, falling back to basename.</p>
+<ul>
+<li><strong>Table Editor</strong>: Enabled with 3 columns
+<ul>
+<li><strong>Columns</strong>:
+<ul>
+<li><code>Sample</code>: Sample (required)
+<ul>
+<li>Sample identifier matching a pg_matrix column (full raw-file path or basename)</li>
+</ul>
+</li>
+<li><code>Condition</code>: Condition (required)
+<ul>
+<li>Experimental group label</li>
+</ul>
+</li>
+<li><code>BioReplicate</code>: BioReplicate
+<ul>
+<li>Biological replicate identifier (optional)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="minimum-proteotypic-peptides-min-unique-peptides">Minimum Proteotypic Peptides (<code>min_unique_peptides</code>)</h4>
+<p>Minimum N.Proteotypic.Sequences required to keep a protein group</p>
+<h4 id="contaminant-column-contaminant-column">Contaminant Column (<code>contaminant_column</code>)</h4>
+<p>Column flagging contaminants with '+'; matching rows are dropped. Skipped automatically if pg_matrix has no such column.</p>
+<h4 id="curated-category-column-cc-mapped-column">Curated Category Column (<code>cc_mapped_column</code>)</h4>
+<p>Optional column whose value equal to the primary gene name flags a 'CC.mapped' category (annotation only, never filtered on). Leave empty to skip.</p>
+<h2 id="outputs">Outputs</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>File</th>
+<th>Type</th>
+<th>Format</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_annotation</code></td>
+<td><code>sample_annotation.tsv</code></td>
+<td>data</td>
+<td>tsv</td>
+<td>Resolved sample-to-group mapping used for the run</td>
+</tr>
+<tr>
+<td><code>log2_matrix</code></td>
+<td><code>log2_matrix.tsv</code></td>
+<td>data</td>
+<td>tsv</td>
+<td>Filtered protein groups as a log2 intensity matrix, before normalisation</td>
+</tr>
+<tr>
+<td><code>normalized_median</code></td>
+<td><code>normalized_Median.tsv</code></td>
+<td>data</td>
+<td>tsv</td>
+<td>PRONE Median-normalised matrix</td>
+</tr>
+<tr>
+<td><code>normalized_quantile</code></td>
+<td><code>normalized_Quantile.tsv</code></td>
+<td>data</td>
+<td>tsv</td>
+<td>PRONE Quantile-normalised matrix</td>
+</tr>
+<tr>
+<td><code>normalized_vsn</code></td>
+<td><code>normalized_VSN.tsv</code></td>
+<td>data</td>
+<td>tsv</td>
+<td>PRONE VSN-normalised matrix</td>
+</tr>
+<tr>
+<td><code>normalized_normicsvsn</code></td>
+<td><code>normalized_NormicsVSN.tsv</code></td>
+<td>data</td>
+<td>tsv</td>
+<td>PRONE NormicsVSN-normalised matrix (skipped automatically if PRONE cannot fit it on this dataset)</td>
+</tr>
+<tr>
+<td><code>cv_comparison_plot</code></td>
+<td><code>normalisation/CV_comparison_all_methods.png</code></td>
+<td>plot</td>
+<td>png</td>
+<td>Per-group CV across normalisation methods; the deciding plot for choosing a method for the differential-expression plugin</td>
+</tr>
+<tr>
+<td><code>qc_run_summary_plot</code></td>
+<td><code>QC/QC_run_summary.png</code></td>
+<td>plot</td>
+<td>png</td>
+<td>Combined per-run QC panel (proteins, precursors, missed cleavages identified). Present only when a stats file was given.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><strong>R Version</strong>: &gt;=4.0</li>
+</ul>
+<h3 id="r-dependencies-external-file">R Dependencies (External File)</h3>
+<p>Dependencies are defined in: <code>r-packages.txt</code></p>
+<ul>
+<li><code>SummarizedExperiment</code></li>
+<li><code>PRONE</code></li>
+<li><code>tidyverse</code></li>
+<li><code>ggplot2</code></li>
+<li><code>RColorBrewer</code></li>
+<li><code>scales</code></li>
+<li><code>svglite</code></li>
+<li><code>patchwork</code></li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>: When you create a custom environment for this plugin, these dependencies will be automatically installed.</p>
+</blockquote>
+<h2 id="example-data">Example Data</h2>
+<p>This plugin includes example data for testing:</p>
+<pre><code class="language-yaml">  pg_matrix_file: examples/pg_matrix.tsv
+  stats_file: examples/stats.tsv
+  annotation_file: examples/annotation.txt
+  min_unique_peptides: 2
+</code></pre>
+<p>Load example data by clicking the <strong>Load Example</strong> button in the UI.</p>
+<h2 id="usage">Usage</h2>
+<h3 id="via-ui">Via UI</h3>
+<ol>
+<li>Navigate to <strong>preprocessing</strong> → <strong>Total Proteomics QC &amp; Normalisation</strong></li>
+<li>Fill in the required inputs</li>
+<li>Click <strong>Run Analysis</strong></li>
+</ol>
+<h3 id="via-plugin-system">Via Plugin System</h3>
+<pre><code class="language-typescript">const jobId = await pluginService.executePlugin('total-proteomics-qc-normalisation', {
+  // Add parameters here
+});
+</code></pre>
+
+</body>
+</html>

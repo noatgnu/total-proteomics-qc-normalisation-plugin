@@ -1,0 +1,145 @@
+plugin:
+  id: "total-proteomics-qc-normalisation"
+  name: "Total Proteomics QC & Normalisation"
+  description: "QC filtering and PRONE normalisation method comparison for DIA-NN total proteomics data"
+  version: "1.0.0"
+  author: "CauldronGO Team"
+  category: "preprocessing"
+  icon: "filter_alt"
+  repository: "https://github.com/noatgnu/total-proteomics-qc-normalisation-plugin"
+
+runtime:
+  environments: ["r"]
+  entrypoint: "total_proteomics_qc_normalisation.R"
+
+inputs:
+  - name: "pg_matrix_file"
+    label: "Protein Group Matrix File"
+    type: "file"
+    required: true
+    accept: ".csv,.tsv,.txt"
+    description: "DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file)"
+
+  - name: "stats_file"
+    label: "Stats File"
+    type: "file"
+    required: false
+    accept: ".csv,.tsv,.txt"
+    description: "DIA-NN report.stats.tsv (per-run QC metrics). Optional; omit to skip run-level QC plots."
+
+  - name: "annotation_file"
+    label: "Sample Annotation File"
+    type: "file"
+    required: true
+    accept: ".csv,.tsv,.txt"
+    description: "Cauldron sample annotation file. Sample is matched against pg_matrix column names by exact string, falling back to basename."
+    tableColumns:
+      - name: "Sample"
+        label: "Sample"
+        type: "text"
+        required: true
+        description: "Sample identifier matching a pg_matrix column (full raw-file path or basename)"
+      - name: "Condition"
+        label: "Condition"
+        type: "text"
+        required: true
+        description: "Experimental group label"
+      - name: "BioReplicate"
+        label: "BioReplicate"
+        type: "text"
+        required: false
+        description: "Biological replicate identifier (optional)"
+
+  - name: "min_unique_peptides"
+    label: "Minimum Proteotypic Peptides"
+    type: "number"
+    required: false
+    default: 2
+    min: 0
+    step: 1
+    description: "Minimum N.Proteotypic.Sequences required to keep a protein group"
+
+  - name: "contaminant_column"
+    label: "Contaminant Column"
+    type: "text"
+    required: false
+    default: "Contaminant"
+    description: "Column flagging contaminants with '+'; matching rows are dropped. Skipped automatically if pg_matrix has no such column."
+
+  - name: "cc_mapped_column"
+    label: "Curated Category Column"
+    type: "text"
+    required: false
+    description: "Optional column whose value equal to the primary gene name flags a 'CC.mapped' category (annotation only, never filtered on). Leave empty to skip."
+
+outputs:
+  - name: "sample_annotation"
+    path: "sample_annotation.tsv"
+    type: "data"
+    description: "Resolved sample-to-group mapping used for the run"
+    format: "tsv"
+
+  - name: "log2_matrix"
+    path: "log2_matrix.tsv"
+    type: "data"
+    description: "Filtered protein groups as a log2 intensity matrix, before normalisation"
+    format: "tsv"
+
+  - name: "normalized_median"
+    path: "normalized_Median.tsv"
+    type: "data"
+    description: "PRONE Median-normalised matrix"
+    format: "tsv"
+
+  - name: "normalized_quantile"
+    path: "normalized_Quantile.tsv"
+    type: "data"
+    description: "PRONE Quantile-normalised matrix"
+    format: "tsv"
+
+  - name: "normalized_vsn"
+    path: "normalized_VSN.tsv"
+    type: "data"
+    description: "PRONE VSN-normalised matrix"
+    format: "tsv"
+
+  - name: "normalized_normicsvsn"
+    path: "normalized_NormicsVSN.tsv"
+    type: "data"
+    description: "PRONE NormicsVSN-normalised matrix (skipped automatically if PRONE cannot fit it on this dataset)"
+    format: "tsv"
+
+  - name: "cv_comparison_plot"
+    path: "normalisation/CV_comparison_all_methods.png"
+    type: "plot"
+    description: "Per-group CV across normalisation methods; the deciding plot for choosing a method for the differential-expression plugin"
+    format: "png"
+
+  - name: "qc_run_summary_plot"
+    path: "QC/QC_run_summary.png"
+    type: "plot"
+    description: "Combined per-run QC panel (proteins, precursors, missed cleavages identified). Present only when a stats file was given."
+    format: "png"
+
+execution:
+  argsMapping:
+    pg_matrix_file: "--pg_matrix_file"
+    stats_file: "--stats_file"
+    annotation_file: "--annotation_file"
+    min_unique_peptides: "--min_unique_peptides"
+    contaminant_column: "--contaminant_column"
+    cc_mapped_column: "--cc_mapped_column"
+
+  outputDir: "--output_folder"
+
+  requirements:
+    r: ">=4.0"
+    rPackagesFile: "r-packages.txt"
+
+example:
+  enabled: true
+  values:
+    pg_matrix_file: "examples/pg_matrix.tsv"
+    stats_file: "examples/stats.tsv"
+    annotation_file: "examples/annotation.txt"
+    min_unique_peptides: 2
