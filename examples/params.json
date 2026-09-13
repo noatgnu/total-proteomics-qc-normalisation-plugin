@@ -1,0 +1,5 @@
+{
+  "pg_matrix_file": "examples/pg_matrix.tsv",
+  "stats_file": "examples/stats.tsv",
+  "annotation_file": "examples/annotation.txt"
+}
