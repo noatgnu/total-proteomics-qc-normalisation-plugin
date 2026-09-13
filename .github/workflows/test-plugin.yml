@@ -89,7 +89,6 @@ jobs:
           if-no-files-found: warn
 
   generate-deps:
-    if: hashFiles('r-packages.txt') != ''
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +119,7 @@ jobs:
 
   merge-deps-graph:
     needs: generate-deps
-    if: github.event_name == 'push' && hashFiles('r-packages.txt') != ''
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout plugin repo
