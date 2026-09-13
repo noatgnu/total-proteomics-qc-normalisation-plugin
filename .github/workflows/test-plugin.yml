@@ -42,6 +42,10 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/noatgnu/cauldron-go.git /tmp/cauldron-go
           cd /tmp/cauldron-go
+          mkdir -p frontend/dist/browser resources/licenses
+          echo '<!DOCTYPE html><html><head><title>Placeholder</title></head><body>Placeholder</body></html>' > frontend/dist/browser/index.html
+          echo '[]' > resources/licenses/go-licenses.json
+          echo '[]' > resources/licenses/npm-licenses.json
           go build -o /usr/local/bin/cauldron .
           go build -o /usr/local/bin/plugin-validator ./cmd/plugin-validator
 
