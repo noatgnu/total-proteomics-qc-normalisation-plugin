@@ -75,3 +75,15 @@ jobs:
         env:
           CAULDRON_PLUGINS_DIR: /tmp/cauldron-plugins
         run: cauldron job run --params-json "$(cat examples/params.json)" total-proteomics-qc-normalisation
+
+      - name: Resolve output directory
+        if: hashFiles('examples/params.json') != ''
+        run: echo "CAULDRON_OUTPUT_DIR=$HOME/Documents/CauldronOutputs" >> "$GITHUB_ENV"
+
+      - name: Upload plugin output
+        if: hashFiles('examples/params.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-output
+          path: ${{ env.CAULDRON_OUTPUT_DIR }}
+          if-no-files-found: warn
