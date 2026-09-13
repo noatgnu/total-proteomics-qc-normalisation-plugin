@@ -26,17 +26,22 @@ jobs:
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: 'release'
+          use-public-rspm: true
+
+      - name: Read R package list
+        id: r_pkgs
+        run: |
+          echo "packages<<CAULDRON_PKGS_EOF" >> "$GITHUB_OUTPUT"
+          if [ -f r-packages.txt ]; then
+            awk 'NF' r-packages.txt | sed 's/^/any::/' >> "$GITHUB_OUTPUT"
+          fi
+          echo "CAULDRON_PKGS_EOF" >> "$GITHUB_OUTPUT"
 
       - name: Install R dependencies
-        run: |
-          if [ -f r-packages.txt ]; then
-            Rscript -e '
-              if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-              pkgs <- readLines("r-packages.txt")
-              pkgs <- pkgs[nzchar(trimws(pkgs))]
-              for (p in pkgs) if (!requireNamespace(p, quietly = TRUE)) BiocManager::install(p, update = FALSE, ask = FALSE)
-            '
-          fi
+        if: steps.r_pkgs.outputs.packages != ''
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: ${{ steps.r_pkgs.outputs.packages }}
 
       - name: Build cauldron CLI and plugin-validator
         run: |
