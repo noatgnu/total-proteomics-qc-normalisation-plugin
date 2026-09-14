@@ -225,8 +225,8 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
   se_norm <- tryCatch(
     PRONE::normalize_se(se, methods = all_methods),
     error = function(e) {
-      message(paste0("normalize_se failed with all methods (", e$message, "); retrying without NormicsVSN"))
-      all_methods <<- setdiff(all_methods, "NormicsVSN")
+      message(paste0("normalize_se failed with all methods (", e$message, "); retrying without VSN-family methods (VSN, NormicsVSN)"))
+      all_methods <<- setdiff(all_methods, c("VSN", "NormicsVSN"))
       PRONE::normalize_se(se, methods = all_methods)
     }
   )
