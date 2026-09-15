@@ -71,12 +71,14 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
     dir.create(file.path(output_folder, sub), showWarnings = FALSE, recursive = TRUE)
   }
 
+  # @step: Loading pg_matrix...
   message("Loading pg_matrix...")
   pg_sep <- detect_delimiter(pg_matrix_file)
   pg_raw <- read.table(pg_matrix_file, sep = pg_sep, header = TRUE,
                         na.strings = c("NA", "NaN", "N/A", "#VALUE!"),
                         check.names = FALSE, stringsAsFactors = FALSE)
 
+  # @step: Loading annotation file...
   message("Loading annotation file...")
   annotation_df <- read_annotation(annotation_file)
 
@@ -101,6 +103,8 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
   readr::write_tsv(sample_annotation, file.path(output_folder, "sample_annotation.tsv"))
 
   # ---- optional contaminant filter (guarded) ----
+  # @step: Filtering proteins (contaminants and minimum peptides)
+  message("Filtering proteins by contaminants and minimum peptides...")
   if (!is.null(contaminant_column) && contaminant_column != "" && contaminant_column %in% colnames(pg_raw)) {
     cflag <- stringr::str_trim(as.character(pg_raw[[contaminant_column]]))
     n_contam <- sum(cflag == "+", na.rm = TRUE)
@@ -152,7 +156,8 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
 
   # ---- run-level QC plots from the stats file (optional) ----
   if (!is.null(stats_file) && stats_file != "") {
-    message("Loading stats file...")
+    # @step-if: Loading stats file for QC plots
+    message("Loading stats file for QC plots...")
     stats_sep <- detect_delimiter(stats_file)
     stats <- read.table(stats_file, sep = stats_sep, header = TRUE, check.names = FALSE, stringsAsFactors = FALSE)
 
@@ -208,6 +213,7 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
   }
 
   # ---- PRONE normalisation across all methods ----
+  # @step: Running PRONE normalisation...
   message("Running PRONE normalisation...")
   pg_for_prone <- pg_clean |> dplyr::select(Protein.Group, Genes, dplyr::all_of(sample_cols))
   meta_prone <- sample_annotation |>
@@ -240,6 +246,8 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
   save_all_formats(corr_plot, file.path(output_folder, "normalisation", "PRONE_intragroup_correlation"))
 
   # ---- CV comparison across methods (the decision plot) ----
+  # @step: Computing CV comparison across normalisation methods...
+  message("Computing CV comparison across normalisation methods...")
   cv_by_method <- purrr::map_dfr(all_methods, function(m) {
     mat <- as.matrix(SummarizedExperiment::assay(se_norm, m))[, sample_cols]
     rownames(mat) <- pg_clean$Protein.Group
@@ -272,6 +280,8 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
   message("Median CV per method (lower is better):")
   print(cv_by_method |> dplyr::group_by(method) |> dplyr::summarise(median_cv = median(cv, na.rm = TRUE)))
 
+  # @step: Writing normalised output matrices...
+  message("Writing normalised output matrices...")
   for (m in all_methods) {
     mat <- as.matrix(SummarizedExperiment::assay(se_norm, m))[, sample_cols]
     rownames(mat) <- pg_clean$Protein.Group
@@ -279,6 +289,7 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
                       file.path(output_folder, paste0("normalized_", m, ".tsv")))
   }
 
+  # @step: QC and normalisation complete.
   message("QC and normalisation complete.")
 }
 

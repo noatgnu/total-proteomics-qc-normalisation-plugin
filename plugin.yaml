@@ -12,6 +12,9 @@ runtime:
   environments: ["r"]
   entrypoint: "total_proteomics_qc_normalisation.R"
 
+diagram:
+  enabled: true
+
 inputs:
   - name: "pg_matrix_file"
     label: "Protein Group Matrix File"

@@ -127,6 +127,26 @@
 <strong>Author</strong>: CauldronGO Team</p>
 <h2 id="description">Description</h2>
 <p>QC filtering and PRONE normalisation method comparison for DIA-NN total proteomics data</p>
+<h2 id="workflow-diagram">Workflow Diagram</h2>
+<pre class="mermaid">flowchart TD
+    Start([Start]) --&gt; step1
+    step1[&quot;Loading pg_matrix...&quot;]
+    step1 --&gt; step2
+    step2[&quot;Loading annotation file...&quot;]
+    step2 --&gt; step3
+    step3[&quot;Filtering proteins (contaminants and minimum peptides)&quot;]
+    step3 --&gt; step4
+    step4{&quot;Loading stats file for QC plots&quot;}
+    step4 --&gt; step5
+    step5[&quot;Running PRONE normalisation...&quot;]
+    step5 --&gt; step6
+    step6[&quot;Computing CV comparison across normalisation methods...&quot;]
+    step6 --&gt; step7
+    step7[&quot;Writing normalised output matrices...&quot;]
+    step7 --&gt; step8
+    step8[&quot;QC and normalisation complete.&quot;]
+    step8 --&gt; End([End])
+</pre>
 <h2 id="runtime">Runtime</h2>
 <ul>
 <li>

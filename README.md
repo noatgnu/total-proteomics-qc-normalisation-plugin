@@ -23,6 +23,30 @@
 
 QC filtering and PRONE normalisation method comparison for DIA-NN total proteomics data
 
+
+## Workflow Diagram
+
+```mermaid
+flowchart TD
+    Start([Start]) --> step1
+    step1["Loading pg_matrix..."]
+    step1 --> step2
+    step2["Loading annotation file..."]
+    step2 --> step3
+    step3["Filtering proteins (contaminants and minimum peptides)"]
+    step3 --> step4
+    step4{"Loading stats file for QC plots"}
+    step4 --> step5
+    step5["Running PRONE normalisation..."]
+    step5 --> step6
+    step6["Computing CV comparison across normalisation methods..."]
+    step6 --> step7
+    step7["Writing normalised output matrices..."]
+    step7 --> step8
+    step8["QC and normalisation complete."]
+    step8 --> End([End])
+```
+
 ## Runtime
 
 - **Environments**: `r`
@@ -117,10 +141,10 @@ Dependencies are defined in: `r-packages.txt`
 This plugin includes example data for testing:
 
 ```yaml
-  pg_matrix_file: examples/pg_matrix.tsv
   stats_file: examples/stats.tsv
   annotation_file: examples/annotation.txt
   min_unique_peptides: 2
+  pg_matrix_file: examples/pg_matrix.tsv
 ```
 
 Load example data by clicking the **Load Example** button in the UI.
