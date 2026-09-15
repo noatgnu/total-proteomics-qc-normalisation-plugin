@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-13T17:53:50Z",
+  "generatedAt": "2026-09-14T17:58:05Z",
   "packages": [
     {
       "name": "abind",
@@ -144,11 +144,6 @@
     {
       "name": "bslib",
       "version": "0.12.0",
-      "repository": "standard"
-    },
-    {
-      "name": "ca",
-      "version": "0.71.1",
       "repository": "standard"
     },
     {
@@ -1144,6 +1139,11 @@
     {
       "name": "zoo",
       "version": "1.9-0",
+      "repository": "standard"
+    },
+    {
+      "name": "ca",
+      "version": "0.72",
       "repository": "standard"
     },
     {
