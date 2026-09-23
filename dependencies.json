@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T12:26:32Z",
+  "generatedAt": "2026-09-23T13:52:54Z",
   "packages": [
     {
       "name": "abind",
@@ -63,7 +63,7 @@
     },
     {
       "name": "S4Vectors",
-      "version": "0.50.2",
+      "version": "0.50.3",
       "repository": "standard"
     },
     {
@@ -144,6 +144,11 @@
     {
       "name": "bslib",
       "version": "0.12.0",
+      "repository": "standard"
+    },
+    {
+      "name": "ca",
+      "version": "0.72",
       "repository": "standard"
     },
     {
@@ -577,6 +582,11 @@
       "repository": "standard"
     },
     {
+      "name": "knitr",
+      "version": "1.52",
+      "repository": "standard"
+    },
+    {
       "name": "labeling",
       "version": "0.4.3",
       "repository": "standard"
@@ -699,11 +709,6 @@
     {
       "name": "mvtnorm",
       "version": "1.4-2",
-      "repository": "standard"
-    },
-    {
-      "name": "ncdf4",
-      "version": "1.24",
       "repository": "standard"
     },
     {
@@ -922,6 +927,11 @@
       "repository": "standard"
     },
     {
+      "name": "Rmpfr",
+      "version": "1.1-3",
+      "repository": "standard"
+    },
+    {
       "name": "RSpectra",
       "version": "0.16-2",
       "repository": "standard"
@@ -1012,6 +1022,11 @@
       "repository": "standard"
     },
     {
+      "name": "survival",
+      "version": "3.8-12",
+      "repository": "standard"
+    },
+    {
       "name": "sys",
       "version": "3.4.3",
       "repository": "standard"
@@ -1053,7 +1068,7 @@
     },
     {
       "name": "tinytex",
-      "version": "0.60",
+      "version": "0.61",
       "repository": "standard"
     },
     {
@@ -1113,7 +1128,7 @@
     },
     {
       "name": "xfun",
-      "version": "0.60",
+      "version": "0.61",
       "repository": "standard"
     },
     {
@@ -1142,23 +1157,8 @@
       "repository": "standard"
     },
     {
-      "name": "ca",
-      "version": "0.72",
-      "repository": "standard"
-    },
-    {
-      "name": "knitr",
-      "version": "1.52",
-      "repository": "standard"
-    },
-    {
-      "name": "Rmpfr",
-      "version": "1.1-3",
-      "repository": "standard"
-    },
-    {
-      "name": "survival",
-      "version": "3.8-12",
+      "name": "ncdf4",
+      "version": "1.24",
       "repository": "standard"
     },
     {
@@ -1438,7 +1438,7 @@
     },
     {
       "name": "readxl",
-      "version": "1.5.0",
+      "version": "1.5.0.1",
       "repository": "standard"
     },
     {
@@ -1468,18 +1468,13 @@
     },
     {
       "name": "selectr",
-      "version": "0.6-0",
+      "version": "0.7-0",
       "repository": "standard"
     },
     {
       "name": "textshaping",
       "version": "1.0.5",
       "repository": "standard"
-    },
-    {
-      "name": "tidyverse",
-      "version": "2.0.0",
-      "repository": "any"
     },
     {
       "name": "uuid",
@@ -1490,6 +1485,11 @@
       "name": "vroom",
       "version": "1.7.1",
       "repository": "standard"
+    },
+    {
+      "name": "tidyverse",
+      "version": "2.0.0",
+      "repository": "any"
     },
     {
       "name": "scales",
@@ -1504,6 +1504,11 @@
     {
       "name": "patchwork",
       "version": "1.3.2",
+      "repository": "any"
+    },
+    {
+      "name": "nanoparquet",
+      "version": "0.5.2",
       "repository": "any"
     },
     {
