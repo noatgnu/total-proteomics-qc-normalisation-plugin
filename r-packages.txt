@@ -6,3 +6,4 @@ RColorBrewer
 scales
 svglite
 patchwork
+nanoparquet

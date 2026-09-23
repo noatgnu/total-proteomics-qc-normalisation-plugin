@@ -23,6 +23,78 @@ detect_delimiter <- function(filepath) {
 
 basename_of <- function(x) sub(".*[/\\\\]", "", x)
 
+run_stem <- function(x) sub("\\.[^.]*$", "", basename_of(x))
+
+is_parquet <- function(filepath) tolower(tools::file_ext(filepath)) == "parquet"
+
+diann_report_columns <- c("Run", "Protein.Group", "PG.MaxLFQ")
+
+parquet_column_names <- function(filepath) {
+  schema <- nanoparquet::read_parquet_schema(filepath)
+  schema$name[!is.na(schema$r_col)]
+}
+
+#' Read a delimited text or parquet file into a data.frame.
+read_table_file <- function(filepath, na_strings = "NA") {
+  if (is_parquet(filepath)) {
+    return(as.data.frame(nanoparquet::read_parquet(filepath), stringsAsFactors = FALSE))
+  }
+  read.table(filepath, sep = detect_delimiter(filepath), header = TRUE, na.strings = na_strings,
+             quote = "\"", comment.char = "", check.names = FALSE, stringsAsFactors = FALSE)
+}
+
+#' TRUE when the file is a long-format DIA-NN precursor report (report.parquet) rather than a pg_matrix.
+is_diann_report_parquet <- function(filepath) {
+  is_parquet(filepath) && all(diann_report_columns %in% parquet_column_names(filepath))
+}
+
+#' Build a wide pg_matrix (one PG.MaxLFQ column per Run) from a DIA-NN report.parquet using the
+#' DIA-NN 2.x matrix rules: Q.Value, Global.Q.Value and Global.PG.Q.Value at or below q_cutoff and
+#' run-specific PG.Q.Value at or below run_pg_q_cutoff.
+diann_report_to_pg_matrix <- function(filepath, q_cutoff = 0.01, run_pg_q_cutoff = 0.05) {
+  available <- parquet_column_names(filepath)
+  q_limits <- c(Q.Value = q_cutoff, Global.Q.Value = q_cutoff, Global.PG.Q.Value = q_cutoff,
+                PG.Q.Value = run_pg_q_cutoff)
+  q_limits <- q_limits[names(q_limits) %in% available]
+  wanted <- intersect(c(diann_report_columns, "Protein.Names", "Genes", "Stripped.Sequence",
+                        "Proteotypic", "Decoy", names(q_limits)), available)
+  report <- nanoparquet::read_parquet(filepath, col_select = wanted)
+  message(paste("Report precursor rows:", nrow(report)))
+
+  keep <- !is.na(report$PG.MaxLFQ) & report$PG.MaxLFQ > 0
+  if ("Decoy" %in% wanted) keep <- keep & report$Decoy == 0
+  for (qc in names(q_limits)) keep <- keep & !is.na(report[[qc]]) & report[[qc]] <= q_limits[[qc]]
+  report <- report[keep, ]
+  message(paste0("Rows passing ", paste0(names(q_limits), " <= ", q_limits, collapse = ", "), ": ", nrow(report)))
+
+  if (!("Genes" %in% wanted)) report$Genes <- report$Protein.Group
+  if (!("Protein.Names" %in% wanted)) report$Protein.Names <- NA_character_
+  if (!("Stripped.Sequence" %in% wanted)) report$Stripped.Sequence <- NA_character_
+  if (!("Proteotypic" %in% wanted)) report$Proteotypic <- 1
+
+  protein_info <- report |>
+    dplyr::group_by(Protein.Group) |>
+    dplyr::summarise(
+      Protein.Names = dplyr::first(Protein.Names),
+      Genes = dplyr::first(Genes),
+      N.Sequences = dplyr::n_distinct(Stripped.Sequence),
+      N.Proteotypic.Sequences = dplyr::n_distinct(Stripped.Sequence[Proteotypic == 1]),
+      .groups = "drop"
+    )
+
+  run_levels <- unique(report$Run)
+  intensities <- report |>
+    dplyr::group_by(Protein.Group, Run) |>
+    dplyr::summarise(PG.MaxLFQ = max(PG.MaxLFQ), .groups = "drop") |>
+    tidyr::pivot_wider(names_from = Run, values_from = PG.MaxLFQ)
+
+  pg <- dplyr::left_join(protein_info, intensities, by = "Protein.Group") |>
+    dplyr::select(Protein.Group, Protein.Names, Genes, N.Sequences, N.Proteotypic.Sequences,
+                  dplyr::all_of(run_levels))
+  message(paste("Protein groups:", nrow(pg), "Runs:", length(run_levels)))
+  as.data.frame(pg, stringsAsFactors = FALSE)
+}
+
 save_all_formats <- function(plot_obj, path_no_ext, width = 10, height = 6) {
   if (is.null(plot_obj)) return(invisible(NULL))
   if (inherits(plot_obj, "ggplot")) {
@@ -37,8 +109,7 @@ save_all_formats <- function(plot_obj, path_no_ext, width = 10, height = 6) {
 }
 
 read_annotation <- function(annotation_file) {
-  sep <- detect_delimiter(annotation_file)
-  df <- read.table(annotation_file, sep = sep, header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+  df <- read_table_file(annotation_file)
   if (!("Sample" %in% colnames(df)) || !("Condition" %in% colnames(df))) {
     stop("Annotation file must have Sample and Condition columns", call. = FALSE)
   }
@@ -57,6 +128,7 @@ match_sample_columns <- function(pg_colnames, annotation_df) {
       next
     }
     hit <- pg_colnames[basename_of(pg_colnames) == basename_of(s)]
+    if (length(hit) == 0) hit <- pg_colnames[run_stem(pg_colnames) == run_stem(s)]
     if (length(hit) >= 1) matched[i] <- hit[1]
   }
   matched
@@ -64,7 +136,7 @@ match_sample_columns <- function(pg_colnames, annotation_df) {
 
 run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, output_folder,
                                   min_unique_peptides = 2, contaminant_column = "Contaminant",
-                                  cc_mapped_column = NULL) {
+                                  cc_mapped_column = NULL, q_value_cutoff = 0.01) {
 
   dir.create(output_folder, showWarnings = FALSE, recursive = TRUE)
   for (sub in c("QC", "normalisation")) {
@@ -73,10 +145,12 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
 
   # @step: Loading pg_matrix...
   message("Loading pg_matrix...")
-  pg_sep <- detect_delimiter(pg_matrix_file)
-  pg_raw <- read.table(pg_matrix_file, sep = pg_sep, header = TRUE,
-                        na.strings = c("NA", "NaN", "N/A", "#VALUE!"),
-                        check.names = FALSE, stringsAsFactors = FALSE)
+  pg_raw <- if (is_diann_report_parquet(pg_matrix_file)) {
+    message("Detected DIA-NN report.parquet - building protein group matrix from PG.MaxLFQ")
+    diann_report_to_pg_matrix(pg_matrix_file, q_cutoff = q_value_cutoff)
+  } else {
+    read_table_file(pg_matrix_file, na_strings = c("NA", "NaN", "N/A", "#VALUE!"))
+  }
 
   # @step: Loading annotation file...
   message("Loading annotation file...")
@@ -158,11 +232,11 @@ run_qc_normalisation <- function(pg_matrix_file, stats_file, annotation_file, ou
   if (!is.null(stats_file) && stats_file != "") {
     # @step-if: Loading stats file for QC plots
     message("Loading stats file for QC plots...")
-    stats_sep <- detect_delimiter(stats_file)
-    stats <- read.table(stats_file, sep = stats_sep, header = TRUE, check.names = FALSE, stringsAsFactors = FALSE)
+    stats <- read_table_file(stats_file)
 
     stats$sample_match <- vapply(stats$File.Name, function(f) {
       hit <- sample_annotation$sample_name[basename_of(sample_annotation$sample_name) == basename_of(f)]
+      if (length(hit) == 0) hit <- sample_annotation$sample_name[run_stem(sample_annotation$sample_name) == run_stem(f)]
       if (length(hit) >= 1) hit[1] else NA_character_
     }, character(1))
 
@@ -325,6 +399,7 @@ output_folder <- params$output_folder
 min_unique_peptides <- ifelse(is.null(params$min_unique_peptides), 2, as.numeric(params$min_unique_peptides))
 contaminant_column <- ifelse(is.null(params$contaminant_column), "Contaminant", params$contaminant_column)
 cc_mapped_column <- params$cc_mapped_column
+q_value_cutoff <- ifelse(is.null(params$q_value_cutoff), 0.01, as.numeric(params$q_value_cutoff))
 
 if (is.null(pg_matrix_file) || is.null(annotation_file) || is.null(output_folder)) {
   stop("Missing required arguments: pg_matrix_file, annotation_file, output_folder", call. = FALSE)
@@ -337,5 +412,6 @@ run_qc_normalisation(
   output_folder = output_folder,
   min_unique_peptides = min_unique_peptides,
   contaminant_column = contaminant_column,
-  cc_mapped_column = cc_mapped_column
+  cc_mapped_column = cc_mapped_column,
+  q_value_cutoff = q_value_cutoff
 )

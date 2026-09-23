@@ -217,11 +217,19 @@
 <td>-</td>
 <td>Always visible</td>
 </tr>
+<tr>
+<td><code>q_value_cutoff</code></td>
+<td>Report Q-Value Cutoff</td>
+<td>number (min: 0, max: 1, step: 0.001)</td>
+<td>No</td>
+<td>0.01</td>
+<td>Always visible</td>
+</tr>
 </tbody>
 </table>
 <h3 id="input-details">Input Details</h3>
 <h4 id="protein-group-matrix-file-pg-matrix-file">Protein Group Matrix File (<code>pg_matrix_file</code>)</h4>
-<p>DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file)</p>
+<p>DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file), the same matrix as .parquet, or a DIA-NN 2.x report.parquet</p>
 <h4 id="stats-file-stats-file">Stats File (<code>stats_file</code>)</h4>
 <p>DIA-NN report.stats.tsv (per-run QC metrics). Optional; omit to skip run-level QC plots.</p>
 <h4 id="sample-annotation-file-annotation-file">Sample Annotation File (<code>annotation_file</code>)</h4>
@@ -257,6 +265,8 @@
 <p>Column flagging contaminants with '+'; matching rows are dropped. Skipped automatically if pg_matrix has no such column.</p>
 <h4 id="curated-category-column-cc-mapped-column">Curated Category Column (<code>cc_mapped_column</code>)</h4>
 <p>Optional column whose value equal to the primary gene name flags a 'CC.mapped' category (annotation only, never filtered on). Leave empty to skip.</p>
+<h4 id="report-q-value-cutoff-q-value-cutoff">Report Q-Value Cutoff (<code>q_value_cutoff</code>)</h4>
+<p>Only used when a DIA-NN report.parquet is given as the protein group matrix: Q.Value, Global.Q.Value and Global.PG.Q.Value cutoff (run-specific PG.Q.Value is fixed at 0.05)</p>
 <h2 id="outputs">Outputs</h2>
 <table>
 <thead>
@@ -342,16 +352,17 @@
 <li><code>scales</code></li>
 <li><code>svglite</code></li>
 <li><code>patchwork</code></li>
+<li><code>nanoparquet</code></li>
 </ul>
 <blockquote>
 <p><strong>Note</strong>: When you create a custom environment for this plugin, these dependencies will be automatically installed.</p>
 </blockquote>
 <h2 id="example-data">Example Data</h2>
 <p>This plugin includes example data for testing:</p>
-<pre><code class="language-yaml">  pg_matrix_file: examples/pg_matrix.tsv
-  stats_file: examples/stats.tsv
-  annotation_file: examples/annotation.txt
+<pre><code class="language-yaml">  annotation_file: examples/annotation.txt
   min_unique_peptides: 2
+  pg_matrix_file: examples/pg_matrix.tsv
+  stats_file: examples/stats.tsv
 </code></pre>
 <p>Load example data by clicking the <strong>Load Example</strong> button in the UI.</p>
 <h2 id="usage">Usage</h2>

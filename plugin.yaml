@@ -20,14 +20,14 @@ inputs:
     label: "Protein Group Matrix File"
     type: "file"
     required: true
-    accept: ".csv,.tsv,.txt"
-    description: "DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file)"
+    accept: ".csv,.tsv,.txt,.parquet"
+    description: "DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file), the same matrix as .parquet, or a DIA-NN 2.x report.parquet"
 
   - name: "stats_file"
     label: "Stats File"
     type: "file"
     required: false
-    accept: ".csv,.tsv,.txt"
+    accept: ".csv,.tsv,.txt,.parquet"
     description: "DIA-NN report.stats.tsv (per-run QC metrics). Optional; omit to skip run-level QC plots."
 
   - name: "annotation_file"
@@ -74,6 +74,16 @@ inputs:
     type: "text"
     required: false
     description: "Optional column whose value equal to the primary gene name flags a 'CC.mapped' category (annotation only, never filtered on). Leave empty to skip."
+
+  - name: "q_value_cutoff"
+    label: "Report Q-Value Cutoff"
+    type: "number"
+    required: false
+    default: 0.01
+    min: 0
+    max: 1
+    step: 0.001
+    description: "Only used when a DIA-NN report.parquet is given as the protein group matrix: Q.Value, Global.Q.Value and Global.PG.Q.Value cutoff (run-specific PG.Q.Value is fixed at 0.05)"
 
 outputs:
   - name: "sample_annotation"
@@ -132,6 +142,7 @@ execution:
     min_unique_peptides: "--min_unique_peptides"
     contaminant_column: "--contaminant_column"
     cc_mapped_column: "--cc_mapped_column"
+    q_value_cutoff: "--q_value_cutoff"
 
   outputDir: "--output_folder"
 

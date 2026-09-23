@@ -63,12 +63,13 @@ flowchart TD
 | `min_unique_peptides` | Minimum Proteotypic Peptides | number (min: 0, step: 1) | No | 2 | Always visible |
 | `contaminant_column` | Contaminant Column | text | No | Contaminant | Always visible |
 | `cc_mapped_column` | Curated Category Column | text | No | - | Always visible |
+| `q_value_cutoff` | Report Q-Value Cutoff | number (min: 0, max: 1, step: 0.001) | No | 0.01 | Always visible |
 
 ### Input Details
 
 #### Protein Group Matrix File (`pg_matrix_file`)
 
-DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file)
+DIA-NN report.pg_matrix.tsv (protein group intensities, one column per raw file), the same matrix as .parquet, or a DIA-NN 2.x report.parquet
 
 
 #### Stats File (`stats_file`)
@@ -104,6 +105,11 @@ Column flagging contaminants with '+'; matching rows are dropped. Skipped automa
 Optional column whose value equal to the primary gene name flags a 'CC.mapped' category (annotation only, never filtered on). Leave empty to skip.
 
 
+#### Report Q-Value Cutoff (`q_value_cutoff`)
+
+Only used when a DIA-NN report.parquet is given as the protein group matrix: Q.Value, Global.Q.Value and Global.PG.Q.Value cutoff (run-specific PG.Q.Value is fixed at 0.05)
+
+
 ## Outputs
 
 | Name | File | Type | Format | Description |
@@ -133,6 +139,7 @@ Dependencies are defined in: `r-packages.txt`
 - `scales`
 - `svglite`
 - `patchwork`
+- `nanoparquet`
 
 > **Note**: When you create a custom environment for this plugin, these dependencies will be automatically installed.
 
@@ -141,10 +148,10 @@ Dependencies are defined in: `r-packages.txt`
 This plugin includes example data for testing:
 
 ```yaml
+  pg_matrix_file: examples/pg_matrix.tsv
   stats_file: examples/stats.tsv
   annotation_file: examples/annotation.txt
   min_unique_peptides: 2
-  pg_matrix_file: examples/pg_matrix.tsv
 ```
 
 Load example data by clicking the **Load Example** button in the UI.
